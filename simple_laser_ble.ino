@@ -6,7 +6,10 @@
 
 // --- Definiciones ---
 #define LASER_PIN 0
+
+// UUIDs del Nordic UART Service (NUS)
 #define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 // --- Variables Globales ---
@@ -14,12 +17,12 @@ BLEServer* pServer = NULL;
 BLECharacteristic* pTxCharacteristic = NULL;
 bool deviceConnected = false;
 
-// Variables para la máquina de estados del láser
 enum LaserState { BEAM_INTACT, BEAM_CUT };
 LaserState currentLaserState = BEAM_INTACT;
-unsigned long beamCutTime = 0; // Momento en que se corta el haz (pasa a LOW)
+unsigned long beamCutTime = 0;
 
-// --- Callbacks del Servidor BLE ---
+// --- Callbacks del Servidor y Características BLE ---
+
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
@@ -33,6 +36,15 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
+// Callback para la característica RX (aunque no se use, es necesaria para el perfil NUS)
+class MyCallbacks : public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+        // No hacemos nada con los datos recibidos.
+        // Su propósito es solo completar el perfil NUS.
+    }
+};
+
+
 // --- Configuración Inicial (setup) ---
 void setup() {
   Serial.begin(115200);
@@ -42,22 +54,33 @@ void setup() {
   BLEDevice::init("Heltec Laser Timer");
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
+
   BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Característica TX (para enviar datos al teléfono)
   pTxCharacteristic = pService->createCharacteristic(
                       CHARACTERISTIC_UUID_TX,
                       BLECharacteristic::PROPERTY_NOTIFY
                     );
   pTxCharacteristic->addDescriptor(new BLE2902());
+
+  // Característica RX (para recibir datos del teléfono)
+  // Es necesaria para que el servicio sea reconocido como un perfil UART/Serial
+  BLECharacteristic *pRxCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_UUID_RX,
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+  pRxCharacteristic->setCallbacks(new MyCallbacks());
+
   pService->start();
 
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  BLEAdvertising *pAdvertising = pServer->getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);
-  pAdvertising->setMaxPreferred(0x12);
-  BLEDevice::startAdvertising();
+  pAdvertising->setMinPreferred(0x0); // Recommended values for Apple devices
+  pAdvertising->setMaxPreferred(0x0);
+  pServer->startAdvertising();
 
-  // Leer el estado inicial del pin para evitar una falsa detección al arrancar
   if (digitalRead(LASER_PIN) == LOW) {
       currentLaserState = BEAM_CUT;
       beamCutTime = millis();
@@ -70,32 +93,24 @@ void setup() {
 void loop() {
   int pinState = digitalRead(LASER_PIN);
 
-  // Máquina de estados para detectar los flancos (cambios de estado)
   switch (currentLaserState) {
-
     case BEAM_INTACT:
-      // Si el haz estaba intacto y ahora se corta (pasa de HIGH a LOW)
       if (pinState == LOW) {
-        beamCutTime = millis(); // Guardamos el momento del corte
-        currentLaserState = BEAM_CUT; // Cambiamos el estado
+        beamCutTime = millis();
+        currentLaserState = BEAM_CUT;
         Serial.println("Haz cortado (LOW)");
       }
       break;
 
     case BEAM_CUT:
-      // Si el haz estaba cortado y ahora se restaura (pasa de LOW a HIGH)
       if (pinState == HIGH) {
-        unsigned long beamHighDuration = millis() - beamCutTime; // Calculamos la duración
-        currentLaserState = BEAM_INTACT; // Cambiamos el estado
+        unsigned long beamHighDuration = millis() - beamCutTime;
+        currentLaserState = BEAM_INTACT;
 
-        // Creamos el mensaje a enviar
         char msgBuffer[50];
         snprintf(msgBuffer, sizeof(msgBuffer), "Beam HIGH duration: %lu ms", beamHighDuration);
-
-        // Lo mostramos en el monitor serie para depuración
         Serial.println(msgBuffer);
 
-        // Si hay un dispositivo conectado, enviamos la notificación BLE
         if (deviceConnected) {
           pTxCharacteristic->setValue(msgBuffer);
           pTxCharacteristic->notify();
@@ -104,6 +119,5 @@ void loop() {
       break;
   }
 
-  // Una pequeña pausa para dar estabilidad al sistema
   delay(5);
 }
