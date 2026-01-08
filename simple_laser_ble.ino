@@ -108,7 +108,7 @@ void loop() {
         currentLaserState = BEAM_INTACT;
 
         char msgBuffer[50];
-        snprintf(msgBuffer, sizeof(msgBuffer), "Beam HIGH duration: %lu ms", beamHighDuration);
+        snprintf(msgBuffer, sizeof(msgBuffer), "Beam HIGH duration: %lu ms\n", beamHighDuration);
         Serial.println(msgBuffer);
 
         if (deviceConnected) {
