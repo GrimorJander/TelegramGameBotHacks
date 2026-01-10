@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAIM Cronómetro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">CAIM</h1>
+            <p class="subtitle">CRONÓMETRO DEPORTIVO</p>
+        </header>
+
+        <div class="connection-bar">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span class="status-text" id="statusText">Desconectado</span>
+            <button class="btn-connect" id="btnConnect" onclick="toggleConnection()">Conectar</button>
+        </div>
+
+        <div class="timer-card">
+            <div class="mode-badges-container">
+                <span class="auto-badge" id="autoBadge">AUTO</span>
+                <span class="mode-badge" id="modeBadge">SOLO</span>
+            </div>
+            <div class="timer-display-container">
+                <div class="timer-display" id="timerDisplay">
+                    <span class="digit">0</span><span class="digit">0</span><span class="sep">.</span><span class="digit">0</span><span class="digit">0</span>
+                </div>
+            </div>
+            <div class="best-time" id="bestTime">
+                <span class="icon">🏆</span>
+                <span>Mejor tiempo: --:--</span>
+            </div>
+        </div>
+
+        <div class="multi-input-card" id="multiInputCard">
+            <h3>🏃 Selecciona número de corredores</h3>
+            <div class="runners-selector" id="runnersSelector"></div>
+        </div>
+
+        <div class="results-card" id="resultsCard">
+            <div class="results-header"><h3>🏁 Resultados</h3></div>
+            <div class="results-list" id="resultsList"></div>
+        </div>
+
+        <div class="controls-grid">
+            <button class="btn btn-start" id="btnStart" onclick="debouncedSendCommand('start')" disabled>
+                <span class="icon">▶️</span><span>START</span>
+            </button>
+            <button class="btn btn-stop" id="btnStop" onclick="debouncedSendCommand('stop')" disabled>
+                <span class="icon">⏹️</span><span>STOP</span>
+            </button>
+            <button class="btn btn-reset" id="btnReset" onclick="debouncedSendCommand('reset')" disabled>
+                <span class="icon">🔄</span><span>RESET</span>
+            </button>
+        </div>
+
+        <div class="mode-controls">
+            <button class="btn btn-mode" id="btnMode" onclick="debouncedSendCommand('mode')" disabled>
+                <span class="icon">🔀</span><span>CAMBIAR MODO</span>
+            </button>
+            <button class="btn btn-auto" id="btnAuto" onclick="debouncedSendCommand('auto')" disabled>
+                <span class="icon">⏱️</span><span>AUTO</span>
+            </button>
+        </div>
+
+        <div class="battery-card">
+            <div class="battery-header">
+                <h3>🔋 Estado de Batería</h3>
+                <button class="btn-battery" id="btnBattery" onclick="debouncedSendCommand('bat')" disabled>Actualizar</button>
+            </div>
+            <div class="battery-levels">
+                <div class="battery-item">
+                    <div class="label">CRONÓMETRO</div>
+                    <div class="value" id="batteryLocal">--</div>
+                </div>
+                <div class="battery-item">
+                    <div class="label">LÁSER TX</div>
+                    <div class="value" id="batteryRemote">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-card">
+            <div class="log-header">
+                <h3>📋 Registro</h3>
+                <div class="log-header-buttons">
+                    <button class="btn-log-action btn-share" onclick="shareLog()">📤</button>
+                    <button class="btn-log-action btn-clear" onclick="clearLog()">🗑️</button>
+                </div>
+            </div>
+            <div class="log-console" id="logConsole"></div>
+            <div class="log-input-container">
+                <input type="text" class="log-input" id="commandInput" placeholder="Escribe un comando..." onkeypress="handleInputKeypress(event)" disabled>
+                <button class="btn-send" id="btnSendCommand" onclick="sendCustomCommand()" disabled>➤</button>
+            </div>
+        </div>
+
+        <div class="feedback-settings">
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkSound" checked onchange="toggleSound()">
+                <span>🔊 Sonido</span>
+            </label>
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkVibration" checked onchange="toggleVibration()">
+                <span>📳 Vibración</span>
+            </label>
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkTimestamp" onchange="toggleTimestamp()">
+                <span>🕐 Hora</span>
+            </label>
+        </div>
+
+        <footer><p>CAIM Cronómetro © 2026</p></footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
