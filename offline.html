@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAIM Cronómetro - Sin Conexión</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+    <style>
+        :root {
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --primary: #00d4ff;
+        }
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 400px;
+        }
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="icon">📡</span>
+        <h1>Sin Conexión</h1>
+        <p>Parece que no tienes conexión a internet. CAIM Cronómetro necesita una conexión para la primera carga. Una vez cargada, la aplicación funcionará sin conexión.</p>
+        <p>Por favor, revisa tu conexión y vuelve a intentarlo.</p>
+    </div>
+</body>
+</html>
