@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- SEO y Meta básicos -->
+    <title>CAIM Cronómetro</title>
+    <meta name="description" content="Cronómetro deportivo profesional con conexión Bluetooth. Modos Solo, Multi y Split para entrenamiento y competición.">
+    <meta name="keywords" content="cronómetro, deportivo, bluetooth, atletismo, entrenamiento, split, multi">
+    <meta name="author" content="CAIM">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="CAIM">
+
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CAIM">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="icons/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="icons/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="icons/icon-384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="icons/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="icons/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="icons/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="icons/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="icons/splash-1536x2048.png" media="(min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2)">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-72.png">
+
+    <!-- Preconnect para fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Banner de compatibilidad para navegadores sin Bluetooth -->
+    <div class="compatibility-banner" id="compatibilityBanner">
+        <span>⚠️ Tu navegador no soporta Bluetooth. <a href="https://caniuse.com/web-bluetooth" target="_blank">Ver navegadores compatibles</a></span>
+        <button class="close-btn" onclick="hideCompatibilityBanner()">✕</button>
+    </div>
+
+    <!-- Banner de instalación PWA -->
+    <div class="install-banner" id="installBanner">
+        <span>📱 Instalar CAIM en tu dispositivo</span>
+        <button class="install-btn" id="installBtn">Instalar</button>
+        <button class="dismiss-btn" onclick="hideInstallBanner()">Ahora no</button>
+    </div>
+
+    <!-- Indicador offline -->
+    <div class="offline-indicator" id="offlineIndicator">
+        📡 Sin conexión a Internet - Modo offline
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 class="logo">CAIM</h1>
+            <p class="subtitle">CRONÓMETRO DEPORTIVO</p>
+        </header>
+
+        <div class="connection-bar">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span class="status-text" id="statusText">Desconectado</span>
+            <button class="btn-connect" id="btnConnect">Conectar</button>
+        </div>
+
+        <div class="timer-card">
+            <div class="mode-badges-container">
+                <span class="mode-badge" id="modeBadge">SOLO</span>
+            </div>
+            <div class="timer-display-container">
+                <div class="timer-display" id="timerDisplay">
+                    <span class="digit">0</span><span class="digit">0</span><span class="sep">.</span><span class="digit">0</span><span class="digit">0</span>
+                </div>
+            </div>
+            <div class="best-time" id="bestTime">
+                <span class="icon">🏆</span>
+                <span>Mejor tiempo: --:--</span>
+            </div>
+        </div>
+
+        <div class="multi-input-card" id="multiInputCard">
+            <h3>🏃 Selecciona número de corredores</h3>
+            <div class="runners-selector" id="runnersSelector"></div>
+        </div>
+
+        <div class="results-card" id="resultsCard">
+            <div class="results-header"><h3>🏁 Resultados</h3></div>
+            <div class="results-list" id="resultsList"></div>
+        </div>
+
+        <div class="controls-grid">
+            <button class="btn btn-start" id="btnStart" disabled>
+                <span class="icon">▶️</span><span>START</span>
+            </button>
+            <button class="btn btn-stop" id="btnStop" disabled>
+                <span class="icon">⏹️</span><span>STOP</span>
+            </button>
+            <button class="btn btn-reset" id="btnReset" disabled>
+                <span class="icon">🔄</span><span>RESET</span>
+            </button>
+        </div>
+
+        <div class="mode-controls">
+            <button class="btn btn-mode-item btn-mode-solo active" id="btnSolo" disabled>
+                <span class="icon">👤</span><span>SOLO</span>
+            </button>
+            <button class="btn btn-mode-item btn-mode-multi" id="btnMulti" disabled>
+                <span class="icon">👥</span><span>MULTI</span>
+            </button>
+            <button class="btn btn-mode-item btn-mode-split" id="btnSplit" disabled>
+                <span class="icon">✂️</span><span>SPLIT</span>
+            </button>
+            <button class="btn btn-mode-item btn-mode-auto" id="btnAutoMode" disabled>
+                <span class="icon">⏱️</span><span>AUTO</span>
+            </button>
+        </div>
+
+        <div class="battery-card">
+            <div class="battery-header">
+                <h3>🔋 Estado de Batería</h3>
+                <button class="btn-battery" id="btnBattery" disabled>Actualizar</button>
+            </div>
+            <div class="battery-levels">
+                <div class="battery-item">
+                    <div class="label">CRONÓMETRO</div>
+                    <div class="value" id="batteryLocal">--</div>
+                </div>
+                <div class="battery-item">
+                    <div class="label">LÁSER TX</div>
+                    <div class="value" id="batteryRemote">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-card">
+            <div class="log-header">
+                <h3>📋 Registro</h3>
+                <div class="log-header-buttons">
+                    <button class="btn-log-action btn-share" id="btnShare">📤</button>
+                    <button class="btn-log-action btn-clear" id="btnClear">🗑️</button>
+                </div>
+            </div>
+            <div class="log-console" id="logConsole"></div>
+            <div class="log-input-container">
+                <input type="text" class="log-input" id="commandInput" placeholder="Escribe un comando..." disabled>
+                <button class="btn-send" id="btnSendCommand" disabled>➤</button>
+            </div>
+        </div>
+
+        <div class="feedback-settings">
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkSound" checked>
+                <span>🔊 Sonido</span>
+            </label>
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkVibration" checked>
+                <span>📳 Vibración</span>
+            </label>
+            <label class="feedback-checkbox">
+                <input type="checkbox" id="chkTimestamp">
+                <span>🕐 Hora</span>
+            </label>
+        </div>
+
+        <footer>
+            <p>CAIM Cronómetro © 2024</p>
+            <p style="margin-top: 5px; font-size: 0.7rem;">v1.0.0 | PWA</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Banner de actualización -->
+    <div class="update-banner" id="updateBanner">
+        <span class="update-text">🔄 Nueva versión disponible</span>
+        <button class="update-btn" onclick="updateApp()">Actualizar</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
